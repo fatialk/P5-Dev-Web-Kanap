@@ -1,12 +1,10 @@
-console.log('toto');
+
 
 const searchProducts = async () => {
     const response = await fetch('http://localhost:3000/api/products');
-    const products = await response.json(); //extract JSON from the http response
-    // do something with myJson
+    const products = await response.json(); 
     console.log(response);
     console.log(products);
-    let toto = 'bobo';
     let item = '';
     let product;
     for (let i = 0; i < products.length; i++) {

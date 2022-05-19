@@ -1,4 +1,4 @@
-console.log('toto');
+
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const id = urlParams.get('id');
@@ -8,6 +8,12 @@ const searchProduct = async () => {
     const product = await response.json(); 
     console.log(response);
     console.log(product);
+    
+    let colorsHtml = '';
+    for (let i = 0; i < 3; i++){
+      
+      colorsHtml += `<option value="vert">vert</option>`;
+    }
     let item = `<article>
     <div class="item__img">
       <img src="`+product['imageUrl']+`" alt="`+product['altTxt']+`">
@@ -29,8 +35,7 @@ const searchProduct = async () => {
           <label for="color-select">Choisir une couleur :</label>
           <select name="color-select" id="colors">
               <option value="">--SVP, choisissez une couleur --</option>
-              <option value="vert">vert</option>
-              <option value="blanc">blanc</option>
+              `+colorsHtml+`
           </select>
         </div>
 
@@ -51,3 +56,4 @@ const searchProduct = async () => {
 
 }
 searchProduct();
+
