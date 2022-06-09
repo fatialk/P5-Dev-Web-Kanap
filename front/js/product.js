@@ -3,57 +3,102 @@ const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const id = urlParams.get('id');
 console.log(id);
-const searchProduct = async () => {
-    const response = await fetch('http://localhost:3000/api/products/'+id+'');
-    const product = await response.json(); 
-    console.log(response);
-    console.log(product);
-    
-    let colorsHtml = '';
-    for (let i = 0; i < 3; i++){
-      
-      colorsHtml += `<option value="vert">vert</option>`;
-    }
-    let item = `<article>
-    <div class="item__img">
-      <img src="`+product['imageUrl']+`" alt="`+product['altTxt']+`">
-    </div>
-    <div class="item__content">
+init();
 
-      <div class="item__content__titlePrice">
-        <h1 id="title">`+product['name']+`</h1>
-        <p>Prix : <span id="price">`+product['price']+`</span>€</p>
-      </div>
-
-      <div class="item__content__description">
-        <p class="item__content__description__title">Description :</p>
-        <p id="description">`+product['description']+`</p>
-      </div>
-
-      <div class="item__content__settings">
-        <div class="item__content__settings__color">
-          <label for="color-select">Choisir une couleur :</label>
-          <select name="color-select" id="colors">
-              <option value="">--SVP, choisissez une couleur --</option>
-              `+colorsHtml+`
-          </select>
-        </div>
-
-        <div class="item__content__settings__quantity">
-          <label for="itemQuantity">Nombre d'article(s) (1-100) :</label>
-          <input type="number" name="itemQuantity" min="1" max="100" value="0" id="quantity">
-        </div>
-      </div>
-
-      <div class="item__content__addButton">
-        <button id="addToCart">Ajouter au panier</button>
-      </div>
-
-    </div>
-  </article>`;
-  const itemHtml = document.getElementById('item');
-    itemHtml.innerHTML = item;
-
+function init(){
+  displayProduct();
+  addToCart();
 }
-searchProduct();
+
+async function displayProduct()
+{
+  
+  const response = await fetch('http://localhost:3000/api/products/'+id);
+  const product = await response.json(); 
+  
+  
+  let colorsHtml = '';
+  let colors = product['colors'];
+  let option;
+  
+  for (let i = 0; i < colors.length; i++){
+    
+    option = document.createElement('option');
+    option.setAttribute('value', colors[i]);
+    option.innerText = colors[i];
+    
+    document.querySelector('#colors').appendChild(option);
+    
+    
+  }
+  
+  let image = document.createElement('img');
+  image.setAttribute('src', product.imageUrl)
+  image.setAttribute('alt',product.altTxt)
+  document.querySelector('.item__img').appendChild(image)
+  
+  document.querySelector('#title').innerHTML = product.name;
+  
+  document.querySelector('#price').innerHTML = product.price;
+  
+  document.querySelector('#description').innerHTML = product.description;
+  
+  
+}
+
+
+function addToCart(){
+  document.querySelector('#addToCart').addEventListener('click', function(){
+    
+    //const color = document.querySelector('#colors').value;
+    //const qty = document.querySelector('#quantity').value; 
+
+    let productToCart = {
+      'color':document.querySelector('#colors').value,
+      'qty': parseInt(document.querySelector('#quantity').value),
+      'id':id,
+    };
+
+    // if regarder si la qty > 0 && qty < 101
+    if(productToCart.qty <= 0 || productToCart.qty >101){
+      alert('La quantité doit être comprise entre 1 et 100 !');
+      return;
+    }
+console.log(productToCart.color);
+    if(productToCart.color == '' ){
+      alert('La couleur doit être renseignée !');
+      return;
+    }
+
+    let localCart = [];
+
+    if (localStorage.getItem('cart'))
+    {
+      localCart = JSON.parse(localStorage.cart);
+    }
+
+   
+    if(localCart.length){
+      //si localCart on a ajouté le localStorage.cart
+      let cartModified = false;
+      localCart.forEach(element => {
+        if(element.id == productToCart.id && element.color == productToCart.color){
+          element.qty +=  productToCart.qty;
+            cartModified = true;
+        }
+      });
+      if(cartModified == false){
+        localCart.push(productToCart)
+      }
+      localStorage.setItem('cart', JSON.stringify(localCart))
+    }else{
+      //le localstorage est vide
+      localCart.push(productToCart);
+      localStorage.setItem('cart', JSON.stringify(localCart))
+    }
+
+
+    
+  })
+}
 
