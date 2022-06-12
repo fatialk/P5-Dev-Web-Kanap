@@ -1,8 +1,11 @@
 init();
 
 function init(){
+  if(!document.querySelector('section#cart__items'))
+  {
+    return;
+  }
   displaycart();
-  total();
 }
 
 
@@ -17,16 +20,18 @@ function displaycart()
   }
   
   if(localCart.length){
+    let count = 0;
     //si localCart on a ajouté le localStorage.cart
-    let cartQty = 0;
-    let total = 0;
     localCart.forEach(async element => {
       
       const response = await fetch('http://localhost:3000/api/products/'+element.id);
       const product = await response.json();
-     
       createArticle(product, element);
-      
+      count++;
+      if(count === localCart.length)
+      {
+        total();
+      }
     });
     
   }else{
@@ -117,39 +122,115 @@ function createArticle(product, cartElement) {
   p4 = document.createElement('p');
   p4.classList.add('deleteItem');
   p4.innerText = 'Supprimer';
+  p4.onclick = removeProductFromCart;
   div6.appendChild(p4);
-
-  
 
   document.querySelector('#cart__items').appendChild(article);
 
-//regex
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
 }
 function total(){
   let inputsQty = document.querySelectorAll('.itemQuantity');
-  console.log(inputsQty)
+  let price = 0;
+  let count = 0;
+  inputsQty.forEach(async inputQty => {
+    const parentArticle = inputQty.closest('article.cart__item');
+    const productId = parentArticle.dataset.id;
+    const qty = parseInt(inputQty.value);
+    const response = await fetch('http://localhost:3000/api/products/'+productId);
+    const product = await response.json();
+    price += product.price * qty;
+    count++;
+    if(count === inputsQty.length)
+    {
+      document.getElementById('totalQuantity').innerText = count.toString();
+      document.getElementById('totalPrice').innerText = price;
+    }
+  });
 } 
 
-function modifyQuantity(){
+function modifyQuantity(e){
   //code pour ajouter/dimiunuer qte storage
+  const parentArticle = e.target.closest('article.cart__item');
+  const productToCart = {
+    'color': parentArticle.dataset.color,
+    'qty': parseInt(e.target.value),
+    'id': parentArticle.dataset.id,
+  };
+  refreshCart(productToCart, true);
+  total();
+}
 
+function refreshCart(productToCart, newQty = false)
+{
+
+  // if regarder si la qty > 0 && qty < 101
+  if(productToCart.qty <= 0 || productToCart.qty >101){
+    alert('La quantité doit être comprise entre 1 et 100 !');
+    return;
+  }
+
+  if(productToCart.color === '' ){
+    alert('La couleur doit être renseignée !');
+    return;
+  }
+
+  let localCart = [];
+
+  if (localStorage.getItem('cart'))
+  {
+    localCart = JSON.parse(localStorage.cart);
+  }
+
+
+  if(localCart.length){
+    //si localCart on a ajouté le localStorage.cart
+    let cartModified = false;
+    localCart.forEach(element => {
+      if(element.id === productToCart.id && element.color === productToCart.color){
+        if(newQty)
+        {
+          // si on arrive du panier, la quantité est celle envoyée
+          element.qty = productToCart.qty;
+        }else
+        {
+          // si on vient de la fiche produit, la quantité est incrémentée
+          element.qty +=  productToCart.qty;
+        }
+
+        cartModified = true;
+      }
+    });
+    if(cartModified === false){
+      localCart.push(productToCart)
+    }
+    localStorage.setItem('cart', JSON.stringify(localCart))
+  }else{
+    //le localstorage est vide
+    localCart.push(productToCart);
+    localStorage.setItem('cart', JSON.stringify(localCart))
+  }
+}
+
+function removeProductFromCart(e)
+{
+  const parentArticle = e.target.closest('article.cart__item');
+  const productColor = parentArticle.dataset.color;
+  const productId = parentArticle.dataset.id;
+  let localCart = [];
+
+  if (!localStorage.getItem('cart'))
+  {
+    alert('Aucun panier n\'est disponible');
+    return;
+  }
+
+  localCart = JSON.parse(localStorage.cart);
+  localCart.forEach(function(element, index){
+    if(element.id === productId && element.color === productColor){
+      localCart.splice(index, 1);
+      document.querySelector('[data-id="'+productId+'"]').remove();
+    }
+  });
+  localStorage.setItem('cart', JSON.stringify(localCart));
   total();
 }
