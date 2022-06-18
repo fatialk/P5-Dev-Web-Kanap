@@ -307,7 +307,7 @@ function getProductIdsFromCart()
 }
 
 
-document.querySelector('#firstName').addEventListener('change', async function (e) {
+document.querySelector('#firstName').addEventListener('change', function (e) {
     if(!validate(e.target,regexFirstName))
     {
         e.target.focus();
@@ -318,7 +318,7 @@ document.querySelector('#firstName').addEventListener('change', async function (
     }
 });
 
-document.querySelector('#lastName').addEventListener('change', async function (e) {
+document.querySelector('#lastName').addEventListener('change', function (e) {
     if(!validate(e.target,regexLastName))
     {
         e.target.focus();
@@ -329,7 +329,7 @@ document.querySelector('#lastName').addEventListener('change', async function (e
     }
 });
 
-document.querySelector('#address').addEventListener('change', async function (e) {
+document.querySelector('#address').addEventListener('change', function (e) {
     if(!validate(e.target,regexAddress))
     {
         e.target.focus();
@@ -340,7 +340,7 @@ document.querySelector('#address').addEventListener('change', async function (e)
     }
 });
 
-document.querySelector('#city').addEventListener('change', async function (e) {
+document.querySelector('#city').addEventListener('change', function (e) {
     if(!validate(e.target, regexCity))
     {
         e.target.focus();
@@ -351,7 +351,7 @@ document.querySelector('#city').addEventListener('change', async function (e) {
     }
 });
 
-document.querySelector('#email').addEventListener('change', async function (e) {
+document.querySelector('#email').addEventListener('change', function (e) {
     if(!validate(e.target, regexEmail))
     {
         e.target.focus();
