@@ -58,12 +58,19 @@ async function displayProduct()
 
 function addToCart(){
   document.querySelector('#addToCart').addEventListener('click', function (){
+    
     const productToCart = {
       'color':document.querySelector('#colors').value,
       'qty': parseInt(document.querySelector('#quantity').value),
       'id':id,
     };
     refreshCart(productToCart, document.querySelector('#quantity'));
+    // message ajout d'article au panier
+    {
+      alert('le produit a été ajouté au panier !');
+    }
+  return;
   });
+  
 }
 
