@@ -2,16 +2,41 @@
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const id = urlParams.get('id');
-console.log(id);
+let price = 0;
 init();
 
 function init(){
+  
   if(!document.querySelector('section.item'))
   {
     return;
   }
+  changeQuantity();
   displayProduct();
   addToCart();
+}
+
+
+function changeQuantity(){
+  document.querySelector('#quantity').addEventListener('change', function (){
+    
+    const qty = document.querySelector('#quantity').value;
+    document.querySelector('#price').innerHTML = parseInt(qty) * price;
+  
+    
+  });
+  
+}
+
+function changeColor(){
+  document.querySelector('#color').addEventListener('change', function (){
+    
+    document.querySelector('#quantity').value = 1;
+    document.querySelector('#price').innerHTML = 0;
+  
+    
+  });
+  
 }
 
 async function displayProduct()
@@ -42,7 +67,9 @@ async function displayProduct()
     
     document.querySelector('#title').innerHTML = product.name;
     
+    price = product.price;
     document.querySelector('#price').innerHTML = product.price;
+    document.querySelector('#quantity').value = 1;
     
     document.querySelector('#description').innerHTML = product.description;
     
@@ -58,7 +85,12 @@ async function displayProduct()
 
 function addToCart(){
   document.querySelector('#addToCart').addEventListener('click', function (){
-    
+    const qty = parseInt(document.querySelector('#quantity').value);
+    if(qty <= 0)
+    {
+      alert('Veuillez saisir une quantité valide');
+      return; 
+    }
     const productToCart = {
       'color':document.querySelector('#colors').value,
       'qty': parseInt(document.querySelector('#quantity').value),

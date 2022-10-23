@@ -13,7 +13,6 @@ async function displayProducts() {
             let product;
             if (products.length) {
                 for (let i = 0; i < products.length; i++) {
-                    console.log(products[i]);
                     product = products[i];
 
                     link = document.createElement('a');

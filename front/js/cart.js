@@ -95,7 +95,8 @@ function createArticle(product, cartElement) {
     div3.appendChild(p1);
     
     p2 = document.createElement('p');
-    p2.innerText = new Intl.NumberFormat('fr-FR', {style: 'currency', currency: 'EUR'}).format(product.price);
+    const price = cartElement.qty * product.price;
+    p2.innerText = new Intl.NumberFormat('fr-FR', {style: 'currency', currency: 'EUR'}).format(price);
     div3.appendChild(p2);
     
     
@@ -159,7 +160,7 @@ function total() {
 }
 
 function modifyQuantity(e) {
-    //code pour ajouter/dimiunuer qte storage
+    //code pour ajouter/diminuer qty storage
     const parentArticle = e.target.closest('article.cart__item');
     const productToCart = {
         'color': parentArticle.dataset.color,
@@ -167,9 +168,17 @@ function modifyQuantity(e) {
         'id': parentArticle.dataset.id,
     };
     refreshCart(productToCart, e.target, true);
+    const priceElement = parentArticle.querySelector('.cart__item__content__description :nth-child(3)');
+    modifyPrice(priceElement, e.target, parentArticle.dataset.id)
     total();
 }
 
+async function modifyPrice(element, targetQty, productId) {
+    const response = await fetch('http://localhost:3000/api/products/' + productId);
+    const product = await response.json();
+    price = product.price * parseInt(targetQty.value);
+    element.innerText = new Intl.NumberFormat('fr-FR', {style: 'currency', currency: 'EUR'}).format(price);
+}
 function refreshCart(productToCart, targetQty, newQty = false) {
     
     // if regarder si la qty > 0 && qty < 101
@@ -289,8 +298,14 @@ function sendOrder() {
                 'city': inputCity.value,
                 'email': inputEmail.value
             }
-            const ids = getProductIdsFromCart();
-        fetch('http://localhost:3000/api/products/order', {
+            const [validIds, invalidIds] = getProductIdsFromCart();
+            if(invalidIds.length > 0)
+            {
+                alert('Veuillez vérifier la quantité des produits');
+                return;
+            }
+            
+            fetch('http://localhost:3000/api/products/order', {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -298,20 +313,20 @@ function sendOrder() {
             },
             body: JSON.stringify({
                 'contact' : contact,
-                'products' : ids
+                'products' : validIds
             })
         })
         .then(response => response.json())
         .then(responseJson => {
             window.location.href = 'confirmation.html?orderId='+responseJson.orderId;
-             // vider le local storage après la commande 
+            // vider le local storage après la commande 
             localStorage.clear();
         })
         .catch(e => {
             document.querySelector('.cart').innerHTML = '<h2>Impossible de traiter votre commande. Veuillez réessayer plus tard.</h2>';
         });
-
-
+        
+        
         
     }else
     {
@@ -323,12 +338,18 @@ function sendOrder() {
 
 function getProductIdsFromCart()
 {
-    let ids = [];
+    let validIds = [];
+    let invalidIds = [];
+    
     const localCart = JSON.parse(localStorage.cart);
     localCart.forEach(function (element) {
-        ids.push(element.id);
+        if(parseInt(element.qty) <= 0)
+        {
+            invalidIds.push(element.id);
+        }
+        validIds.push(element.id);
     });
-    return ids;
+    return [validIds, invalidIds];
     
 }
 
